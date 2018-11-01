@@ -21,18 +21,18 @@ This repo houses some Ansible scripts that will deploy a CloudBreak workshop, se
   1) Clone repo down to local machine you have Ansible installed on
   2) Make sure you have your AWS Access/Secret keys exported via ~/.aws/credentials (**IMPORTANT**), boto setup, etc
   3) Modify the *'wsw_ds101-vars.yml'* file, specifically noting to change
-  -- certbot_email: Your email
-  -- seat_count: How many workshop students/seats/users
-  -- aws_region
-  -- workshop_prefix
-  -- workshop_domain
+      -- certbot_email: Your email
+      -- seat_count: How many workshop students/seats/users
+      -- aws_region
+      -- workshop_prefix
+      -- workshop_domain
   The rest you can leave as defaults, or change them to suit your needs.  The variable file is very well commented.
   4) There are 4 parts of this script
-   a) ***ansible-playbook ./1_wsw_ds101-createStacks.yml*** - This first command will build the frame of the Route 53 infrastructure, and deploy the stacks.  The cloudformation module is run in asyncronous mode to prevent having to wait for each stack to complete before starting the build of the next.  Goes from hours of building to about 20 minutes.  Once this command is done, you'll be able to see the stacks building in AWS CloudFormation.  Run this command, then wait about 15 minutes, or until they're marked as 'CREATE_COMPLETE' in CloudFormation.
-   b) ***ansible-playbook ./1_wsw_ds101-createStacks.yml --tags build*** - The following command will loop with an included task file to build out the remaining DNS records needed for the custom A records, *cbd-{seat_number}.{workshop_prefix}.{workshop_domain}, or maybe cbd-12.ds101.fiercesw.network*.  This step will also build the needed files locally that we'll use in the tear-down process.  Run this command, then wait about 10 minutes to have the new DNS records propogate.
-    Oh, and why files?  Because again, AWS' cloudfoundation and especially route53 modules, are dumb and POORLY documented.  Like this is better than their Ansible module documentation.  Sad.
-   c) ***ansible-playbook -i {GENERATED_INVENTORY_FILE} ./2_wsw_ds101-configure.yml*** - Technically the third command, but second file.  This will do a few things such as install EPEL, CertBot, build an SSL certificate for the friendly FQDN we just put in Route53 in the previous step.  Does all the needed start/stopping of CBD.  Also, don't worry, if you pay attention to the output of the previous command, you'll have the generated inventory file listed for you with the full command.  Or it'll be in the *'.{{ workshop_prefix }}'* folder by default.
-   d) ***ansible-playbook ./3_wsw_ds101-dismantle.yml*** - This command will delete the stacks, DNS entries, EC2 keys, and local files.
+      a) ***ansible-playbook ./1_wsw_ds101-createStacks.yml*** - This first command will build the frame of the Route 53 infrastructure, and deploy the stacks.  The cloudformation module is run in asyncronous mode to prevent having to wait for each stack to complete before starting the build of the next.  Goes from hours of building to about 20 minutes.  Once this command is done, you'll be able to see the stacks building in AWS CloudFormation.  Run this command, then wait about 15 minutes, or until they're marked as 'CREATE_COMPLETE' in CloudFormation.
+      b) ***ansible-playbook ./1_wsw_ds101-createStacks.yml --tags build*** - The following command will loop with an included task file to build out the remaining DNS records needed for the custom A records, *cbd-{seat_number}.{workshop_prefix}.{workshop_domain}, or maybe cbd-12.ds101.fiercesw.network*.  This step will also build the needed files locally that we'll use in the tear-down process.  Run this command, then wait about 10 minutes to have the new DNS records propogate.
+       Oh, and why files?  Because again, AWS' cloudfoundation and especially route53 modules, are dumb and POORLY documented.  Like this is better than their Ansible module documentation.  Sad.
+      c) ***ansible-playbook -i {GENERATED_INVENTORY_FILE} ./2_wsw_ds101-configure.yml*** - Technically the third command, but second file.  This will do a few things such as install EPEL, CertBot, build an SSL certificate for the friendly FQDN we just put in Route53 in the previous step.  Does all the needed start/stopping of CBD.  Also, don't worry, if you pay attention to the output of the previous command, you'll have the generated inventory file listed for you with the full command.  Or it'll be in the *'.{{ workshop_prefix }}'* folder by default.
+      d) ***ansible-playbook ./3_wsw_ds101-dismantle.yml*** - This command will delete the stacks, DNS entries, EC2 keys, and local files.
 
 Front to back, you can set up a 50 user workshop cluster in less than 30 minutes, update it, set up friendly FQDNs, and tear it down.  Nifty, eh?
 ## ***...GOTCHAS...***
